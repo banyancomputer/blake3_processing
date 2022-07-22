@@ -1,7 +1,10 @@
 [package]
-name = "banyan_bao_proof"
+name = "blake3-processing"
 version = "0.1.0"
-edition = "2021"
+authors = ["Alex Miller, Jonah Kaye, Claudia Richoux"]
+repository = "https://github.com/banyancomputer/blake3-processing"
+readme = "README.md"
+description = "Banyan's library for everything Blake3 and Bao"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

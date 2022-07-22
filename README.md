@@ -5,19 +5,16 @@
     <img alt="License: ISC" src="https://img.shields.io/badge/License-ISC-yellow.svg" />
   </a>
 </p>
-> This is a rust library for building Blake3 merkle proofs encoded as .bao files.
-> This is for use in the ipfs-proof-oracle.
 
-## Install
-
-```sh
-
-```
+> This is a Rust library for building encoding and decoding Blake3 Merkle Trees.
+> It utilizes Bao in order to encode and decode theses Trees.
+> This library will be called by our Intake system to process incoming files, and by 
+> our Oracle in order to verify queried challenges.
 
 ## Building
 
 ```sh
-cargo build 
+cargo build -- release
 ```
 
 ## Run tests
@@ -28,7 +25,7 @@ cargo test
 
 ## Author
 
-👤 **Alex Miller and Jonah Kaye**
+👤 **Alex Miller, Jonah Kaye, C Richoux**
 
 * Github: [@amiller68](https://github.com/amiller68)
 
