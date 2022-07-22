@@ -1,12 +1,12 @@
 #![allow(dead_code, unused)]
 
-use std::convert::TryInto;
-use anyhow::{Result, Error};
+use anyhow::{anyhow, Result, Error};
 use rand::prelude::*;
+use rand::{thread_rng, Rng};
+use std::convert::TryInto;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{Cursor, SeekFrom};
-use bao::{Hash, encode, decode};
 
 // How big File chunks are with Bao
 // TODO: Subject to change, we need to coordinate with bao team.
@@ -44,17 +44,17 @@ impl<R: Read> Seek for FakeSeeker<R> {
 // Generate a random chunk index for a file of size `file_size`.
 // TODO: Figure out what the correct return type is
 // Look at ipfs-rust-api in our Organization for more insight.
-fn generate_random_chunk_index(file_size: u64) -> u64 {
-    let range = whole_input.len() / BAO_CHUNK_SIZE as u64;
+fn generate_random_chunk_index(file_size: usize) -> usize {
+    let range = file_size / BAO_CHUNK_SIZE;
     let start_index = rand::thread_rng().gen_range(0..range) * BAO_CHUNK_SIZE;
 
     // Return the index of the chunk.
-    start_index as u64
+    start_index as usize
 }
 
 pub struct ObaoSlice {
     pub slice: Vec<u8>,
-    pub start_index: u64
+    pub start_index: usize
 }
 
 // Our Implementation for creating and verifying ObaoSlices from file chunks.
@@ -66,10 +66,10 @@ impl ObaoSlice {
     ///                  Note that these chunks aligned with the obao file, and don't pass Chunk boundaries!
     /// * 'start_byte' - The byte offset of the first chunk from the file.
     /// Returns: A new ObaoSlice.
-    pub fn new(obao: Vec<u8>, chunk: &[u8], start_index: u64) -> Result<ObaoSlice, Error> {
+    pub fn new(obao: Vec<u8>, chunk: &[u8], start_index: usize) -> Result<ObaoSlice, Error> {
         // Check that the chunk is of the correct size.
         if chunk.len() != BAO_CHUNK_SIZE {
-            return Error("Chunk is not of the correct size.");
+            return Err(anyhow!("Chunk is not of size {}", BAO_CHUNK_SIZE));
         }
 
         // Declare a Vector to hold our slice.
@@ -78,11 +78,11 @@ impl ObaoSlice {
         let mut slice_extractor = bao::encode::SliceExtractor::new_outboard(
             FakeSeeker::new(chunk),
             Cursor::new(&obao[..]),
-            start_index,
+            start_index as u64,
             BAO_CHUNK_SIZE.try_into().unwrap(),
         );
         // Extract the slice.
-        extractor.read_to_end(&mut slice)?;
+        slice_extractor.read_to_end(&mut slice)?;
         // Return the ObaoSlice.
         Ok(ObaoSlice { slice, start_index })
     }
@@ -91,26 +91,22 @@ impl ObaoSlice {
     /// # Arguments
     /// * `hash` - The Blake3 hash of the file chunk.
     /// Returns: A bool indicating if the ObaoSlice is valid.
-    pub fn verify(&self, hash: &Hash) -> Result<bool> {
+    pub fn verify(&self, hash: &bao::Hash) -> Result<bool> {
         // Declare a Vector to hold our decoding of the ObaoSlice.
         let mut decoded = Vec::new();
 
         // Decode the ObaoSlice.
         let mut decoder = bao::decode::SliceDecoder::new(
-            &*self::slice,
+            &*self.slice,
             hash,
-            self::start_index,
+            self.start_index as u64,
             BAO_CHUNK_SIZE.try_into().unwrap(),
         );
 
         // Read the decoded ObaoSlice into the decoded Vector.
-        match decoder.read_to_end(&mut decoded)? {
-            0 => {
-                Ok(false)
-            }
-            _ => {
-                Ok(true)
-            }
+        match decoder.read_to_end(&mut decoded) {
+            Err(e) => Ok(false),
+            _ => Ok(true),
         }
     }
 
@@ -118,26 +114,22 @@ impl ObaoSlice {
     /// # Arguments
     /// * `hash` - The Blake3 hash of the file chunk.
     /// Returns: A file chunk.
-    pub fn decode(&self, hash: &Hash) -> Result<Vec<u8>, Error> {
+    pub fn decode(&self, hash: &bao::Hash) -> Result<Vec<u8>, Error> {
         // Declare a Vector to hold our decoding of the ObaoSlice.
         let mut decoded = Vec::new();
 
         // Decode the ObaoSlice.
         let mut decoder = bao::decode::SliceDecoder::new(
-            &*self::slice,
+            &*self.slice,
             hash,
-            self::start_index,
+            self.start_index as u64,
             BAO_CHUNK_SIZE.try_into().unwrap(),
         );
 
         // Read the decoded ObaoSlice into the decoded Vector.
-        match decoder.read_to_end(&mut decoded_output)? {
-            0 => {
-                Error("Could not decode ObaoSlice.")
-            }
-            _ => {
-                Ok(decoded)
-            }
+        match decoder.read_to_end(&mut decoded) {
+            Err(e) => Err(anyhow!("ObaoSlice is invalid")),
+            _ => Ok(decoded)
         }
     }
 }
@@ -145,7 +137,8 @@ impl ObaoSlice {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use obao_creator::ObaoData;
+    use crate::obao_creator::ObaoData;
+    use rand::Rng;
 
     #[test]
     fn verify_slicing() -> Result<(), Box<dyn std::error::Error>> {
@@ -156,7 +149,7 @@ mod tests {
         rand::thread_rng().fill(&mut whole_input[..]);
 
         // Create a random ObaoData.
-        let obao_data = ObaoData::new(whole_input.clone());
+        let obao_data = ObaoData::new(whole_input.clone())?;
 
         // Extract our Obao Data
         let obao = obao_data.obao;
@@ -171,7 +164,7 @@ mod tests {
         let mut extractor = bao::encode::SliceExtractor::new_outboard(
             Cursor::new(&whole_input[..]),
             Cursor::new(&obao[..]),
-            chunk_index,
+            chunk_index as u64,
             BAO_CHUNK_SIZE.try_into().unwrap(),
         );
         let mut slice = Vec::new();
@@ -200,7 +193,7 @@ mod tests {
         rand::thread_rng().fill(&mut whole_input[..]);
 
         // Create a random ObaoData.
-        let obao_data = ObaoData::new(whole_input.clone());
+        let obao_data = ObaoData::new(whole_input.clone())?;
 
         // Extract our Obao Data
         let obao = obao_data.obao;
@@ -212,11 +205,7 @@ mod tests {
         let chunk = &whole_input[chunk_index..chunk_index + BAO_CHUNK_SIZE];
 
         // Create a new ObaoSlice from the chunk.
-        let obao_slice = ObaoSlice::new(
-            obao,
-            chunk,
-            chunk_index
-        )?;
+        let obao_slice = ObaoSlice::new(obao, chunk, chunk_index)?;
 
         // Verify the ObaoSlice against the file chunk. This should return true.
         assert_eq!(obao_slice.verify(&hash)?, true);
@@ -232,7 +221,7 @@ mod tests {
         rand::thread_rng().fill(&mut whole_input[..]);
 
         // Create a random ObaoData.
-        let obao_data = ObaoData::new(whole_input.clone());
+        let obao_data = ObaoData::new(whole_input.clone())?;
 
         // Extract our Obao Data
         let obao = obao_data.obao;
@@ -244,11 +233,7 @@ mod tests {
         let chunk = &whole_input[chunk_index..chunk_index + BAO_CHUNK_SIZE];
 
         // Create a new ObaoSlice from the chunk.
-        let obao_slice = ObaoSlice::new(
-            obao,
-            chunk,
-            chunk_index
-        )?;
+        let obao_slice = ObaoSlice::new(obao, chunk, chunk_index)?;
 
         // Decode the ObaoSlice. This should return our original chunk.
         assert_eq!(obao_slice.decode(&hash)?, chunk);
@@ -264,26 +249,23 @@ mod tests {
         rand::thread_rng().fill(&mut whole_input[..]);
 
         // Create a random ObaoData.
-        let obao_data = ObaoData::new(whole_input.clone());
+        let obao_data = ObaoData::new(whole_input.clone())?;
 
         // Extract our Obao Data
         let obao = obao_data.obao;
         let hash = obao_data.hash;
         let file_size = obao_data.file_size;
 
-        // Generate a random chunk index.
-        let chunk_index = generate_random_chunk_index(file_size);
-        let chunk = &whole_input[chunk_index..chunk_index + BAO_CHUNK_SIZE];
+        // Generate new random input.
+        let mut whole_bad_input = vec![0u8; 1 << 20];
+        rand::thread_rng().fill(&mut whole_bad_input[..]);
 
-        // Change the last byte of the chunk.
-        chunk[chunk.len() - 1] ^= 1;
+        // Create a random chunk index.
+        let chunk_index = generate_random_chunk_index(file_size);
+        let bad_chunk = &mut whole_bad_input[chunk_index..chunk_index + BAO_CHUNK_SIZE];
 
         // Create a new ObaoSlice from the chunk.
-        let obao_slice = ObaoSlice::new(
-            obao,
-            chunk,
-            chunk_index
-        )?;
+        let obao_slice = ObaoSlice::new(obao, bad_chunk, chunk_index)?;
 
         // Verify the ObaoSlice against the file chunk. This should return false.
         assert_eq!(obao_slice.verify(&hash)?, false);
@@ -299,7 +281,7 @@ mod tests {
         rand::thread_rng().fill(&mut whole_input[..]);
 
         // Create a random ObaoData.
-        let obao_data = ObaoData::new(whole_input.clone());
+        let obao_data = ObaoData::new(whole_input.clone())?;
 
         // Extract our Obao Data
         let obao = obao_data.obao;
@@ -307,17 +289,13 @@ mod tests {
 
         // Generate a random chunk index.
         let chunk_index = generate_random_chunk_index(file_size);
-        let chunk = &whole_input[chunk_index..chunk_index + BAO_CHUNK_SIZE];
+        let chunk = &mut whole_input[chunk_index..chunk_index + BAO_CHUNK_SIZE];
 
         // Change the last byte of the chunk.
         chunk[chunk.len() - 1] ^= 1;
 
         // Create a new ObaoSlice from the chunk.
-        let obao_slice = ObaoSlice::new(
-            obao,
-            chunk,
-            chunk_index
-        )?;
+        let obao_slice = ObaoSlice::new(obao, chunk, chunk_index)?;
 
         // Change a single byte of our input and generate a new hash.
         whole_input[chunk_index + BAO_CHUNK_SIZE - 1] ^= 1;
@@ -349,11 +327,7 @@ mod tests {
         let chunk = &whole_input[chunk_index..chunk_index + BAO_CHUNK_SIZE];
 
         // Create a new ObaoSlice from the chunk.
-        let obao_slice = ObaoSlice::new(
-            obao,
-            chunk,
-            chunk_index
-        )?;
+        let obao_slice = ObaoSlice::new(obao, chunk, chunk_index)?;
 
         // Verify the ObaoSlice against the file chunk. This should return true.
         assert_eq!(obao_slice.verify(&hash)?, true);
