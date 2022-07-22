@@ -1,8 +1,8 @@
 [package]
-name = "blake3-processing"
+name = "blake3_processing"
 version = "0.1.0"
 authors = ["Alex Miller, Jonah Kaye, Claudia Richoux"]
-repository = "https://github.com/banyancomputer/blake3-processing"
+repository = "https://github.com/banyancomputer/blake3_processing"
 readme = "README.md"
 description = "Banyan's library for everything Blake3 and Bao"
 edition = "2021"
