@@ -46,7 +46,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "blake3-processing"
+name = "blake3_processing"
 version = "0.1.0"
 dependencies = [
  "anyhow",
