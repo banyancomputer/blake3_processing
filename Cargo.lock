@@ -21,17 +21,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
 
 [[package]]
-name = "banyan_bao_proof"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bao",
- "blake3",
- "rand",
- "time",
-]
-
-[[package]]
 name = "bao"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -54,6 +43,17 @@ dependencies = [
  "cfg-if",
  "constant_time_eq",
  "digest",
+]
+
+[[package]]
+name = "blake3-processing"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bao",
+ "blake3",
+ "rand",
+ "time",
 ]
 
 [[package]]
