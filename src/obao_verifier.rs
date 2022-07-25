@@ -10,7 +10,7 @@ use std::io::{Cursor, SeekFrom};
 
 // How big File chunks are with Bao
 // TODO: Subject to change, we need to coordinate with bao team.
-pub(crate) const BAO_CHUNK_SIZE: usize = 1024;
+pub const BAO_CHUNK_SIZE: usize = 1024;
 
 struct FakeSeeker<R: Read> {
     reader: R,
