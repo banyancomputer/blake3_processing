@@ -44,11 +44,11 @@ impl<R: Read> Seek for FakeSeeker<R> {
 // Generate a random chunk index for a file of size `file_size`.
 // TODO: Figure out what the correct return type is
 // Look at ipfs-rust-api in our Organization for more insight.
-fn generate_random_chunk_index(file_size: usize) -> usize {
+pub fn generate_random_chunk_index(file_size: usize) -> usize {
     let range = file_size / BAO_CHUNK_SIZE;
     let start_index = rand::thread_rng().gen_range(0..range) * BAO_CHUNK_SIZE;
 
-    // Return the index of the chunk.
+    // Return the index of the chunk.s
     start_index as usize
 }
 
