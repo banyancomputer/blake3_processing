@@ -149,7 +149,7 @@ mod tests {
         rand::thread_rng().fill(&mut whole_input[..]);
 
         // Create a random ObaoData.
-        let obao_data = ObaoData::new(whole_input.clone())?;
+        let obao_data = ObaoData::new(&whole_input)?;
 
         // Extract our Obao Data
         let obao = obao_data.obao;
@@ -193,7 +193,7 @@ mod tests {
         rand::thread_rng().fill(&mut whole_input[..]);
 
         // Create a random ObaoData.
-        let obao_data = ObaoData::new(whole_input.clone())?;
+        let obao_data = ObaoData::new(&whole_input)?;
 
         // Extract our Obao Data
         let obao = obao_data.obao;
@@ -221,7 +221,7 @@ mod tests {
         rand::thread_rng().fill(&mut whole_input[..]);
 
         // Create a random ObaoData.
-        let obao_data = ObaoData::new(whole_input.clone())?;
+        let obao_data = ObaoData::new(&whole_input)?;
 
         // Extract our Obao Data
         let obao = obao_data.obao;
@@ -249,7 +249,7 @@ mod tests {
         rand::thread_rng().fill(&mut whole_input[..]);
 
         // Create a random ObaoData.
-        let obao_data = ObaoData::new(whole_input.clone())?;
+        let obao_data = ObaoData::new(&whole_input)?;
 
         // Extract our Obao Data
         let obao = obao_data.obao;
@@ -281,7 +281,7 @@ mod tests {
         rand::thread_rng().fill(&mut whole_input[..]);
 
         // Create a random ObaoData.
-        let obao_data = ObaoData::new(whole_input.clone())?;
+        let obao_data = ObaoData::new(&whole_input)?;
 
         // Extract our Obao Data
         let obao = obao_data.obao;
@@ -311,11 +311,11 @@ mod tests {
         // See if we can verify a slice from a local file.
 
         // Read the file in as input
-        let mut f = File::open("ethereum.pdf")?;
+        let mut f = File::open("tests/files/ethereum.pdf")?;
         let mut whole_input = Vec::new();
         f.read_to_end(&mut whole_input)?;
 
-        let obao_data = ObaoData::new(whole_input.clone())?;
+        let obao_data = ObaoData::new(&whole_input)?;
 
         // Extract our Obao Data
         let obao = obao_data.obao;

@@ -17,8 +17,8 @@ impl ObaoData {
     /// * 'file_bytes` - the bytes of the file we're creating an ObaoData from.
     ///
     /// # Returns - A new ObaoData.
-    pub fn new(file_bytes: Vec<u8>) -> Result<Self> {
-        let (obao, hash) = bao::encode::outboard(&file_bytes);
+    pub fn new(file_bytes: &Vec<u8>) -> Result<Self> {
+        let (obao, hash) = bao::encode::outboard(file_bytes);
         Ok(Self {
             obao,
             hash,
