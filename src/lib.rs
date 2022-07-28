@@ -41,6 +41,21 @@ mod test {
     // Compile results into a json file in tests/results/<filename>.json.
     #[test]
     fn run_tests() {
+        // Make the tests/obaos directory if it doesn't exist.
+        let obaos_dir = "tests/obaos";
+        if !std::path::Path::new(obaos_dir).exists() {
+            std::fs::create_dir(obaos_dir).unwrap();
+        }
+        // Make the tests/slices directory if it doesn't exist.
+        let slices_dir = "tests/slices";
+        if !std::path::Path::new(slices_dir).exists() {
+            std::fs::create_dir(slices_dir).unwrap();
+        }
+        // Make the tests/results directory if it doesn't exist.
+        let results_dir = "tests/results";
+        if !std::path::Path::new(results_dir).exists() {
+            std::fs::create_dir(results_dir).unwrap();
+        }
         // Iterate through every file
         for entry in std::fs::read_dir("tests/files").unwrap() {
             // Declare a new TestData struct for this file.

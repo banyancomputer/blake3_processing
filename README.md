@@ -18,9 +18,22 @@ cargo build -- release
 ```
 
 ## Run tests
-
 ```sh
 cargo test
+```
+
+This command runs logic and performance tests.
+The performance test generates all the slices on a test file, and keeps track of generated files.
+Slice sizes for a file are booked in the `tests/results/<file_name>.json` file.
+
+Performance tests shouldn't be included in the release.
+Results can be found in the `target/tests` directory.
+In order to add a new test, add a file to the `tests/files` directory.
+In order to clear the results of a test run:
+
+```sh
+> cd tests/
+> ./clean_tests.sh
 ```
 
 ## Author
