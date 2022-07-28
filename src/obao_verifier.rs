@@ -1,10 +1,5 @@
-#![allow(dead_code, unused)]
-
 use anyhow::{anyhow, Result, Error};
-use rand::prelude::*;
-use rand::{thread_rng, Rng};
 use std::convert::TryInto;
-use std::fs::File;
 use std::io::prelude::*;
 use std::io::{Cursor, SeekFrom};
 
@@ -39,17 +34,6 @@ impl<R: Read> Seek for FakeSeeker<R> {
         // Do nothing and return the current position.
         Ok(self.bytes_read)
     }
-}
-
-// Generate a random chunk index for a file of size `file_size`.
-// TODO: Figure out what the correct return type is
-// Look at ipfs-rust-api in our Organization for more insight.
-pub fn generate_random_chunk_index(file_size: usize) -> usize {
-    let range = file_size / BAO_CHUNK_SIZE;
-    let start_index = rand::thread_rng().gen_range(0..range) * BAO_CHUNK_SIZE;
-
-    // Return the index of the chunk.s
-    start_index as usize
 }
 
 pub struct ObaoSlice {
@@ -105,7 +89,7 @@ impl ObaoSlice {
 
         // Read the decoded ObaoSlice into the decoded Vector.
         match decoder.read_to_end(&mut decoded) {
-            Err(e) => Ok(false),
+            Err(_) => Ok(false),
             _ => Ok(true),
         }
     }
@@ -128,7 +112,7 @@ impl ObaoSlice {
 
         // Read the decoded ObaoSlice into the decoded Vector.
         match decoder.read_to_end(&mut decoded) {
-            Err(e) => Err(anyhow!("ObaoSlice is invalid")),
+            Err(_) => Err(anyhow!("ObaoSlice is invalid")),
             _ => Ok(decoded)
         }
     }
@@ -139,6 +123,16 @@ mod tests {
     use super::*;
     use crate::obao_creator::ObaoData;
     use rand::Rng;
+    use std::fs::File;
+
+    // Generate a random chunk index for a file of size `file_size`.
+    pub fn generate_random_chunk_index(file_size: usize) -> usize {
+        let range = file_size / BAO_CHUNK_SIZE;
+        let start_index = rand::thread_rng().gen_range(0..range) * BAO_CHUNK_SIZE;
+
+        // Return the index of the chunk.s
+        start_index as usize
+    }
 
     #[test]
     fn verify_slicing() -> Result<(), Box<dyn std::error::Error>> {
@@ -153,7 +147,6 @@ mod tests {
 
         // Extract our Obao Data
         let obao = obao_data.obao;
-        let hash = obao_data.hash;
         let file_size = obao_data.file_size;
 
         // Generate a random chunk index.

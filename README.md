@@ -28,11 +28,11 @@ Slice sizes for a file are booked in the `tests/results/<file_name>.json` file.
 
 Performance tests shouldn't be included in the release.
 Results can be found in the `target/tests` directory.
-In order to add a new test, add a file to the `tests/files` directory. I recommend using `time dd` to generate a file, for example:
+In order to add a new test, add a file to the `tests/files` directory. I recommend using `dd` to generate a file, for example:
 ```sh
-time dd if=/dev/urandom of=10GiB bs=1 count=10737418240
+dd if=/dev/zero of=1G.dat  bs=1G  count=1
 ```
-Generates a 10GiB file.
+Generates a 1GiB file.
 
 In order to clear the results of a test run:
 

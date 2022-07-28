@@ -25,6 +25,4 @@ impl ObaoData {
             file_size: file_bytes.len() as usize,
         })
     }
-
-    // TODO: Implement to_json and from_json
 }

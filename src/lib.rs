@@ -5,34 +5,32 @@ extern crate anyhow;
 pub mod obao_creator;
 pub mod obao_verifier;
 
-// use serde_json;
-use serde::{Serialize};
-
-// The data associated with a single slice of a file.
-#[derive(Serialize)]
-struct SliceData {
-    pub slice_index: usize, // The index of the slice.
-    pub slice_name: String, // The name of the slice.
-    pub size: usize, // How big the slice is.
-    pub verified: bool, // Whether the slice has been verified.
-}
-
-// The data associated with a file.
-#[derive(Serialize)]
-struct TestData {
-    pub hash: String,
-    // The hash of the file.
-    pub size: usize,
-    // The length of the file.
-    pub blocks: usize,
-    // The number of Bao blocks in the file.
-    pub slices: Vec<SliceData>, // The slices of the file.
-}
-
 #[cfg(test)]
 mod test {
     /* uses */
     use super::*;
+    use serde::{Serialize};
+
+    // The data associated with a single slice of a file.
+    #[derive(Serialize)]
+    struct SliceData {
+        pub slice_index: usize, // The index of the slice.
+        pub slice_name: String, // The name of the slice.
+        pub size: usize, // How big the slice is.
+        pub verified: bool, // Whether the slice has been verified.
+    }
+
+    // The data associated with a file.
+    #[derive(Serialize)]
+    struct TestData {
+        pub hash: String,
+        // The hash of the file.
+        pub size: usize,
+        // The length of the file.
+        pub blocks: usize,
+        // The number of Bao blocks in the file.
+        pub slices: Vec<SliceData>, // The slices of the file.
+    }
 
     // Iterate through all the files in the test directory and generate an ObaoData for each.
     // Save obao data in tests/obaos/<filename>.obao.
