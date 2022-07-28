@@ -4,6 +4,7 @@
 .DS_Store
 
 # Ignore test generated files
+tests/files/*
 /test/obaos/*
 /test/results/*
 /test/slices/*
