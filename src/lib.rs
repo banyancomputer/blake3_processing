@@ -28,6 +28,8 @@ mod test {
         pub size: usize,
         // The length of the file.
         pub blocks: usize,
+        // How big the obao file is.
+        pub obao_size: usize,
         // The number of Bao blocks in the file.
         pub slices: Vec<SliceData>, // The slices of the file.
     }
@@ -61,6 +63,7 @@ mod test {
                 hash: String::new(),
                 size: 0,
                 blocks: 0,
+                obao_size: 0,
                 slices: Vec::new(),
             };
 
@@ -84,6 +87,7 @@ mod test {
             file_data.hash = file_obao_data.hash.to_string();
             file_data.size = file_obao_data.file_size;
             file_data.blocks = file_data.size / obao_verifier::BAO_CHUNK_SIZE;
+            file_data.obao_size = file_obao_data.obao.len();
 
             // Make a directory for the slices of this file.
             // Check if the directory exists. If it doesn't, create it.
