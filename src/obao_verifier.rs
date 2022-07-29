@@ -2,6 +2,7 @@ use anyhow::{anyhow, Result, Error};
 use std::convert::TryInto;
 use std::io::prelude::*;
 use std::io::{Cursor, SeekFrom};
+use rand::Rng;
 
 // How big File chunks are with Bao
 // TODO: Subject to change, we need to coordinate with bao team.
@@ -118,21 +119,20 @@ impl ObaoSlice {
     }
 }
 
+// Generate a random chunk index for a file of size `file_size`.
+pub fn generate_random_chunk_index(file_size: usize) -> usize {
+    let range = file_size / BAO_CHUNK_SIZE;
+    let start_index = rand::thread_rng().gen_range(0..range) * BAO_CHUNK_SIZE;
+
+    // Return the index of the chunk.s
+    start_index as usize
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::obao_creator::ObaoData;
-    use rand::Rng;
     use std::fs::File;
-
-    // Generate a random chunk index for a file of size `file_size`.
-    pub fn generate_random_chunk_index(file_size: usize) -> usize {
-        let range = file_size / BAO_CHUNK_SIZE;
-        let start_index = rand::thread_rng().gen_range(0..range) * BAO_CHUNK_SIZE;
-
-        // Return the index of the chunk.s
-        start_index as usize
-    }
 
     #[test]
     fn verify_slicing() -> Result<(), Box<dyn std::error::Error>> {
